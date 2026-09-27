@@ -1,0 +1,30 @@
+{
+  "name": "web-terminal-workbench",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "preview": "vite preview",
+    "test:agent": "node --experimental-strip-types --test tests/agent.test.mjs tests/provider.test.mjs tests/github-blog.test.mjs",
+    "agent:configure": "node --experimental-strip-types scripts/configure-agent.mjs"
+  },
+  "dependencies": {
+    "@fontsource/maple-mono": "^5.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "yaml": "^2.9.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.5"
+  }
+}
