@@ -110,4 +110,4 @@ export function createWordCountPlugin(): AgentPlugin {
 
 ## GitHub 在线管理
 
-内置 github-blog 插件管理 `prettydong/prettydong.github.io` 的 `blog/`。解锁后通过 `/github` 或底栏 GitHub 连接，使用专用令牌框，不向对话发送凭据。支持实时列表、源文读取、草稿发布、文章删除和部署状态查询；发布/删除需浏览器确认，覆盖使用 blob SHA 防止冲突。令牌在清空、锁定、退出、刷新后清除。完整步骤见 [部署文档](github-pages.md)。
+内置 github-blog 插件管理 `prettydong/prettydong.github.io` 的 `blog/`。解锁后通过 `/github` 或底栏 GitHub 连接，使用专用令牌框，不向对话发送凭据。支持实时列表、源文读取、草稿发布、文章删除和部署状态查询；发布/删除需浏览器确认，覆盖使用 blob SHA 防止冲突。支持与 DeepSeek 一起加密配置并使用同一密码解锁；锁定、退出、刷新后清除内存凭据，清空对话保留连接。完整步骤见 [部署文档](github-pages.md)。

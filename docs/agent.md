@@ -16,6 +16,8 @@ npm run agent:configure
 
 Accept the defaults `https://api.deepseek.com` and `deepseek-flash`, or enter another compatible Base URL and model. The Base URL must include any service prefix such as `/v1`; `/chat/completions` is appended if absent. Enter the API key and a password of at least 8 characters twice. Secret inputs are hidden, excluded from readline history, and never passed as shell arguments. Cancel with Ctrl+C. A successful run atomically replaces `src/agent/provider-config.json` with ciphertext; it never writes a plaintext secret file. The initial value is `null` (unconfigured).
 
+The same configuration can include an optional GitHub token. To add or replace only that token without changing the provider, run `npm run agent:configure -- --github`, enter the existing unlock password and the new token in hidden prompts. The CLI verifies the GitHub account and repository permissions before writing ciphertext. Unlocking then connects GitHub as well as configuring the model. GitHub verification failure does not disable the model; `/github` can reconnect with the same password. Clearing conversation preserves both connections; lock, exit and reload clear them.
+
 Rebuild with `npm run build` and deploy normally. Enter `agent`, type the password, press Enter, then send a message. Unlocking decrypts locally and makes no model request; READY means the adapter is configured, not that the provider has verified the key. Wrong passwords do not make network requests. The password field is separate from chat/history, clears after submission and has no outer border. Tab / Shift+Tab cycle the password and available controls; Esc returns. The footer's lock control is keyboard reachable using Tab + Enter. Locking cancels active work and queued messages; it retains the visible transcript until you clear it or exit.
 
 The envelope uses AES-256-GCM with a random 12-byte IV, a random 16-byte salt, PBKDF2-SHA256 (600,000 iterations), and versioned authenticated additional data. Address, model and key are encrypted together. Only ciphertext is bundled. Passwords and decrypted keys are not written to localStorage, sessionStorage, IndexedDB, chat transcripts or logs. JavaScript cannot guarantee memory zeroization; locking releases references and cancels requests rather than erasing browser internals. Someone who knows the password can retrieve the decrypted key through browser developer tools. Public ciphertext permits offline password guessing, so use a long unique passphrase. This is credential unlocking, not server-side user authorization. If users must never obtain the key, use an authenticated backend.
@@ -37,7 +39,8 @@ Local commands (not sent to the provider):
 | Command | Action |
 | --- | --- |
 | `/help` | Toggle command/keyboard help; includes a restore-defaults button |
-| `/plugins` | Toggle the installed Python/blog plugin and tool list |
+| `/plugins` | Toggle the installed Python/blog/GitHub plugin and tool list |
+| `/github` | Show GitHub connection or reconnect with the shared unlock password |
 | `/think off\|low\|high\|max` | Change DeepSeek thinking effort (`none` also means off) |
 | `/limit 8192` | Change per-request output-token cap |
 | `/usage [session\|run\|last]` | Cycle or select the footer usage view |
@@ -122,11 +125,11 @@ All paths resolve against the directory captured when entering `agent`, and stay
 
 ## Python and blog plugins
 
-The terminal registers two built-in plugins alongside the four workspace tools. `/plugins` lists their tools. `run_python` executes code in a dedicated, lazily loaded Pyodide worker, captures stdout/stderr, and saves successful text-file changes with an atomic workspace conflict check. It supports a 1–120 second timeout (default 60) and hard worker termination on cancellation. This interpreter is separate from the terminal's Python REPL. Clear, lock and exit dispose of it; ordinary successful calls retain Python globals. Python can use the browser's JS/network APIs; it is not a security sandbox or a host OS shell.
+The terminal registers three built-in plugins alongside the four workspace tools. `/plugins` lists their tools. `run_python` executes code in a dedicated, lazily loaded Pyodide worker, captures stdout/stderr, and saves successful text-file changes with an atomic workspace conflict check. It supports a 1–120 second timeout (default 60) and hard worker termination on cancellation. This interpreter is separate from the terminal's Python REPL. Clear, lock and exit dispose of it; ordinary successful calls retain Python globals. Python can use the browser's JS/network APIs; it is not a security sandbox or a host OS shell.
 
 The blog plugin provides `blog_list`, `blog_read`, `blog_write_draft` and `blog_preview`. It reads the build-time public blog catalog, stores drafts in `/workspace/blog-drafts`, writes the existing YAML metadata format, and checks SHA-256 revisions before replacing drafts. Previews render in the conversation at terminal font size and include a user-activated Markdown download link. Existing Tab / Shift+Tab navigation includes this link and the preview summary; Enter activates the download, Enter / Space toggles the summary, Esc stops or returns. The footer stays unchanged.
 
-Drafts are local IndexedDB files and persist across sessions. Downloading does not publish; move the file into the source repository's `blog/` and use its existing build/deploy process. Published articles are read-only to this plugin. See [agent-plugins.md](agent-plugins.md) for tool parameters, limits and the extension API. This addition has not been tested or built, at the user's request.
+Drafts are local IndexedDB files and persist across sessions. Downloading does not publish; move the file into the source repository's `blog/` and use its existing build/deploy process. Published articles are read-only to this plugin. See [agent-plugins.md](agent-plugins.md) for tool parameters, limits and the extension API. The GitHub plugin can commit drafts and delete articles after browser confirmation; Pages builds each push. The build and automated tests have passed.
 
 ## Terminal controls
 

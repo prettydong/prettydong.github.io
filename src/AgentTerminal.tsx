@@ -210,12 +210,19 @@ ${plugins.instructions}
     try {
       const credentials = await decryptProvider(encryptedProvider, submitted)
       if (generation !== unlockGeneration.current) return
-      const streamFn = createOpenAICompatibleStream(credentials)
+      let githubError = ''
+      if (credentials.githubToken) {
+        try { await githubSession.connect(credentials.githubToken) }
+        catch (error) { githubError = error instanceof Error ? error.message : 'GitHub 连接失败。' }
+        if (generation !== unlockGeneration.current) return
+      }
+      const streamFn = createOpenAICompatibleStream({ baseUrl: credentials.baseUrl, model: credentials.model, apiKey: credentials.apiKey })
       ownedStream.current = streamFn
       const hostname = new URL(credentials.baseUrl).hostname
       providerCreator.current = hostname === 'api.deepseek.com' ? 'deepseek' : hostname === 'api.openai.com' ? 'openai' : null
       setProvider({ model: credentials.model, deepseek: hostname === 'api.deepseek.com' })
       configureAgent({ streamFn })
+      if (githubError) setNotice(`模型已解锁；${githubError}`)
     } catch (error) {
       if (generation === unlockGeneration.current) setNotice(error instanceof Error ? error.message : '解锁失败。')
     } finally {
@@ -229,7 +236,7 @@ ${plugins.instructions}
   }
   function stop() { agent.clearQueues(); setQueued([]); agent.abort(); input.current?.focus({ preventScroll: true }) }
   function close() { agent.abort(); agent.clearQueues(); plugins.dispose(); onClose() }
-  function clear() { agent.reset(); plugins.dispose(); setGithubOpen(false); setState(agent.state); setRunStartIndex(0); setQueued([]); setNotice(''); input.current?.focus({ preventScroll: true }) }
+  function clear() { agent.reset(); plugins.plugins.filter(plugin => plugin.id !== 'github-blog').forEach(plugin => plugin.dispose?.()); setGithubOpen(false); setState(agent.state); setRunStartIndex(0); setQueued([]); setNotice(''); input.current?.focus({ preventScroll: true }) }
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.defaultPrevented || event.nativeEvent.isComposing || event.keyCode === 229) return
     if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {

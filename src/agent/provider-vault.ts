@@ -1,4 +1,4 @@
-export interface ProviderCredentials { baseUrl: string; model: string; apiKey: string }
+export interface ProviderCredentials { baseUrl: string; model: string; apiKey: string; githubToken?: string }
 export interface EncryptedProvider {
   version: 1
   kdf: 'PBKDF2-SHA256'
@@ -6,6 +6,7 @@ export interface EncryptedProvider {
   salt: string
   iv: string
   ciphertext: string
+  githubConfigured?: true
 }
 const iterations = 600000
 const encoder = new TextEncoder()
@@ -23,7 +24,10 @@ export function validateProviderCredentials(value: unknown): ProviderCredentials
   if ((url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback)) || url.username || url.password || url.search || url.hash) {
     throw new Error('Base URL 需使用 HTTPS，且不能包含凭据、查询参数或片段；本机服务可使用 HTTP。')
   }
-  return { baseUrl: url.href.replace(/\/+$/, ''), model: config.model.trim(), apiKey: config.apiKey.trim() }
+  if (config.githubToken !== undefined && (typeof config.githubToken !== 'string' || !config.githubToken.trim()
+    || /\s/.test(config.githubToken.trim()) || config.githubToken.length > 4096)) throw new Error('GitHub 令牌格式无效。')
+  return { baseUrl: url.href.replace(/\/+$/, ''), model: config.model.trim(), apiKey: config.apiKey.trim(),
+    ...(config.githubToken ? { githubToken: config.githubToken.trim() } : {}) }
 }
 
 async function deriveKey(password: string, salt: Uint8Array) {
@@ -45,7 +49,8 @@ export async function encryptProvider(config: ProviderCredentials, password: str
   try {
     const key = await deriveKey(password, salt)
     const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData }, key, plaintext)
-    return { version: 1, kdf: 'PBKDF2-SHA256', iterations, salt: base64(salt), iv: base64(iv), ciphertext: base64(new Uint8Array(ciphertext)) }
+    return { version: 1, kdf: 'PBKDF2-SHA256', iterations, salt: base64(salt), iv: base64(iv), ciphertext: base64(new Uint8Array(ciphertext)),
+      ...(config.githubToken ? { githubConfigured: true as const } : {}) }
   } finally { plaintext.fill(0) }
 }
 

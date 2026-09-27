@@ -68,3 +68,19 @@ test('conflict errors do not forward credential-bearing server responses', async
  globalThis.fetch = async () => Response.json({message:'test-secret'}, {status:409})
  try {await assert.rejects(session.request('https://api.github.com/repos/prettydong/prettydong.github.io'), error => /版本冲突/.test(error.message) && !error.message.includes('test-secret'))} finally {globalThis.fetch=original}
 })
+
+test('disconnect during authentication prevents connection and further authenticated requests', async () => {
+ const session=new GitHubBlogSession()
+ const original=globalThis.fetch
+ let resolve;const response=new Promise(r=>resolve=r)
+ let calls=0
+ globalThis.fetch=async () => {calls++;return response}
+ try {
+  const connection=session.connect('test-secret')
+  session.disconnect()
+  resolve(Response.json({login:'prettydong'}))
+  await assert.rejects(connection,/取消/)
+  assert.equal(session.connected,false)
+  assert.equal(calls,1)
+ } finally {globalThis.fetch=original}
+})

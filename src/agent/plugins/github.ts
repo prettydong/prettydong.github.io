@@ -28,6 +28,7 @@ export class GitHubBlogSession {
     const candidate = token.trim()
     if (!candidate || /\s/.test(candidate)) throw new Error('请输入有效的 GitHub 令牌。')
     const user = await this.request('https://api.github.com/user', undefined, undefined, candidate)
+    if (generation !== this.generation) throw new Error('连接已取消。')
     if (user.login !== 'prettydong') throw new Error('请使用 prettydong 的 GitHub 账号。')
     const repo = await this.request(root, undefined, undefined, candidate)
     if (!repo.permissions?.push) throw new Error('令牌没有此仓库的写入权限。')
@@ -41,6 +42,10 @@ export class GitHubBlogSession {
       ...(body ? { body: JSON.stringify(body) } : {}) })
     // Never return GitHub error payloads or credentials to model context.
     if (!response.ok) throw new Error(response.status === 409 || response.status === 422 ? 'GitHub 文件版本冲突，请重新读取后再操作。' : `GitHub 请求失败（${response.status}）。检查令牌权限和连接。`)
+    if (url === 'https://api.github.com/user' && token.startsWith('ghp_')) {
+      const scopes = (response.headers.get('x-oauth-scopes') ?? '').split(',').map(value => value.trim())
+      if (!scopes.includes('repo') && !scopes.includes('public_repo')) throw new Error('GitHub 令牌需要 public_repo 或 repo 权限。')
+    }
     return response.json()
   }
   async mutate(action: () => Promise<any>) {

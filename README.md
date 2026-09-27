@@ -92,7 +92,7 @@ npm run dev
 
 博客插件支持检索已发布文章和草稿、分页读取、创建与修改草稿、预览和下载 Markdown，修改前校验版本。草稿持久化到 `/workspace/blog-drafts/YYYY-MM-DD-slug.md`，自动写入摘要和当前服务商的创作者标记；不会自动发布到公开博客。预览中的下载链接可用 Tab 聚焦、Enter 激活，手机可直接点击。发布可通过底栏 GitHub 或 `/github` 连接仓库后交给 Agent 提交，也可把下载文件放入项目 `blog/` 后推送。在线管理步骤见 [GitHub Pages 部署](docs/github-pages.md)。插件接口与开发说明见 [docs/agent-plugins.md](docs/agent-plugins.md)。
 
-支持 OpenAI 兼容的 Chat Completions API。在本机运行 `npm run agent:configure`，默认使用 DeepSeek（`https://api.deepseek.com` / `deepseek-flash`），也可输入其他地址和模型。API key 和至少 8 字符的解锁密码均隐藏输入，只把加密配置写入源码；构建部署后，进入 `agent` 输入密码解锁。底栏可锁定，退出或刷新也会锁定，明文凭据不写入浏览器存储。密码用于解密，知道密码的人仍可从浏览器取得 key；若需要对用户隐藏 key，应使用后端代理。
+支持 OpenAI 兼容的 Chat Completions API。在本机运行 `npm run agent:configure`，默认使用 DeepSeek（`https://api.deepseek.com` / `deepseek-flash`），也可输入其他地址和模型。API key 和至少 8 字符的解锁密码均隐藏输入，只把加密配置写入源码；可在同一流程配置 GitHub 令牌，或运行 `npm run agent:configure -- --github` 仅添加/替换 GitHub 令牌并保留现有模型设置。构建部署后，进入 `agent` 输入密码同时解锁模型和 GitHub。底栏可锁定，退出或刷新也会锁定，明文凭据不写入浏览器存储。密码用于解密，知道密码的人仍可从浏览器取得 key；若需要对用户隐藏 key，应使用后端代理。
 
 解锁后可调整思考强度（关闭 / 低 / 高 / 最高）和每次模型请求的输出上限，默认高强度、8192 tokens；设置本地保存。思考内容单独流式显示、结束后折叠，工具调用时完整保留思考上下文。统计统一放在单行底栏，左侧显示 ↑ 输入、↓ 输出、Σ 合计、R 缓存、T 思考，右侧为模型、思考档位与输出上限；点击用量标签切换会话、任务、最近请求，最近请求显示耗时与首段响应时间。正文不插入统计表或回复小字，所有文字使用终端字号；窄屏底栏可横向查看。仅使用接口报告的用量，缺失时标为未知；思考已包含在输出中。顶栏显示等待、思考、回复和工具执行阶段。
 

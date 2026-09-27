@@ -194,3 +194,28 @@ test('abort retains partial reasoning, usage and timing without invoking partial
   const message = agent.state.messages.at(-1)
   assert.equal(message.reasoning, 'partial'); assert.equal(message.usage.totalTokens, 13); assert.ok(message.timing.durationMs >= 0)
 })
+
+test('shared vault encrypts GitHub token with provider credentials and retains legacy compatibility', async () => {
+  const combined = { ...credentials, githubToken: 'github-test-only-token' }
+  const envelope = await encryptProvider(combined, password)
+  assert.equal(envelope.githubConfigured,true)
+  assert.ok(!JSON.stringify(envelope).includes(combined.githubToken))
+  assert.ok(!JSON.stringify(envelope).includes(combined.apiKey))
+  assert.deepEqual(await decryptProvider(envelope,password),combined)
+  await assert.rejects(decryptProvider(envelope,'wrong-password'),/密码错误/)
+  assert.deepEqual(await decryptProvider(await encryptProvider(credentials,password),password),credentials)
+  for(const githubToken of ['', 'line\nbreak', 'white space', 'x'.repeat(4097)]) assert.throws(() => validateProviderCredentials({...credentials,githubToken}))
+})
+
+test('GitHub credentials never enter model HTTP requests or model results', async () => {
+  const combined = { ...credentials, githubToken: 'github-test-only-token' }
+  let request
+  const stream = createOpenAICompatibleStream(combined, async (url,init) => {
+    request={url,...init}
+    return response(sse([chunk({content:'ok'}),chunk({},'stop')]))
+  })
+  const result=await collect(stream)
+  assert.ok(!JSON.stringify(request).includes(combined.githubToken))
+  assert.ok(!JSON.stringify(result).includes(combined.githubToken))
+  assert.equal(request.headers.Authorization,`Bearer ${combined.apiKey}`)
+})
