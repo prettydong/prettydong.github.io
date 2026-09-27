@@ -17,3 +17,5 @@
 `github_blog_list` 列出实时文章，`github_blog_read` 分页读取源文及 SHA，`github_blog_publish` 提交草稿，`github_blog_delete` 删除明确指定的文章，`github_blog_status` 查询指定提交的 Pages 部署结果。创建文章的 expectedSha 为 null；修改和删除须使用读取所得 SHA。成功提交不等于部署完成，需等工作流成功后刷新网站查看新内容。
 
 连接区域沿用 Agent 的 Tab / Shift+Tab 循环；令牌框 Enter 连接，Esc 退出 Agent。手机可点击连接、断开及底栏 GitHub。清空、锁定或退出会撤销连接；重新连接时再次输入令牌。
+
+本机已连接远程的发布工作副本位于 `/Volumes/app/prettydong.github.io`；原站备份分支为 `backup-before-zed-blog-20260928`。在发布工作副本修改文章后，运行 `npm run build` 检查，再提交并推送到 master。浏览器 Agent 提交后，本机修改前先 git pull 同步。

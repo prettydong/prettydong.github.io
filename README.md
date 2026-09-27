@@ -90,7 +90,7 @@ npm run dev
 
 内置 Python 和博客写作插件，输入 `/plugins` 查看。可以直接说“用 Python 分析 notes/data.csv，把结果保存为 notes/result.json”，或“参考现有博客，写一篇 Python 学习笔记并预览”。Python 在独立 Pyodide 工作线程中执行，支持标准库和按 import 自动加载的 Pyodide 包；默认超时 60 秒，可停止。执行成功才保存新增或修改的工作区文本文件。
 
-博客插件支持检索已发布文章和草稿、分页读取、创建与修改草稿、预览和下载 Markdown，修改前校验版本。草稿持久化到 `/workspace/blog-drafts/YYYY-MM-DD-slug.md`，自动写入摘要和当前服务商的创作者标记；不会自动发布到公开博客。预览中的下载链接可用 Tab 聚焦、Enter 激活，手机可直接点击。发布时把下载文件放入项目 `blog/` 后按原流程构建部署。插件接口与开发说明见 [docs/agent-plugins.md](docs/agent-plugins.md)。
+博客插件支持检索已发布文章和草稿、分页读取、创建与修改草稿、预览和下载 Markdown，修改前校验版本。草稿持久化到 `/workspace/blog-drafts/YYYY-MM-DD-slug.md`，自动写入摘要和当前服务商的创作者标记；不会自动发布到公开博客。预览中的下载链接可用 Tab 聚焦、Enter 激活，手机可直接点击。发布可通过底栏 GitHub 或 `/github` 连接仓库后交给 Agent 提交，也可把下载文件放入项目 `blog/` 后推送。在线管理步骤见 [GitHub Pages 部署](docs/github-pages.md)。插件接口与开发说明见 [docs/agent-plugins.md](docs/agent-plugins.md)。
 
 支持 OpenAI 兼容的 Chat Completions API。在本机运行 `npm run agent:configure`，默认使用 DeepSeek（`https://api.deepseek.com` / `deepseek-flash`），也可输入其他地址和模型。API key 和至少 8 字符的解锁密码均隐藏输入，只把加密配置写入源码；构建部署后，进入 `agent` 输入密码解锁。底栏可锁定，退出或刷新也会锁定，明文凭据不写入浏览器存储。密码用于解密，知道密码的人仍可从浏览器取得 key；若需要对用户隐藏 key，应使用后端代理。
 
